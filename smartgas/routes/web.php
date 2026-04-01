@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FuelController;
 use Illuminate\Foundation\Application;
@@ -14,18 +15,21 @@ Route::get('/', function () {
     ]);
 });
 
+// Updated to use FuelController@index instead of inline closure
 Route::get('/dashboard', [FuelController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+// SmartGas Fuel Routes (auth protected)
+Route::middleware('auth')->group(function () {
+    Route::post('/fuel', [FuelController::class, 'store'])->name('fuel.store');
+    Route::delete('/fuel/{fuelEntry}', [FuelController::class, 'destroy'])->name('fuel.destroy');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    Route::post('/dashboard', [FuelController::class, 'store'])->name('fuel.store');
-    Route::delete('/dashboard/{fuelEntry}', [FuelController::class, 'destroy'])->name('fuel.destroy');
-    
 });
 
 require __DIR__.'/auth.php';
