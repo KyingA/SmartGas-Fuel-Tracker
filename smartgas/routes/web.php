@@ -23,10 +23,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // =============================================
-    // Member B — dagdag mo dito yung dalawang route
-    // Route::post at Route::delete para sa fuel
-    // =============================================
+    Route::post('/dashboard', [FuelController::class, 'store'])->name('fuel.store');
+    Route::delete('/dashboard/{fuelEntry}', [FuelController::class, 'destroy'])->name('fuel.destroy');
+    
 });
 
 require __DIR__.'/auth.php';

@@ -19,8 +19,25 @@ class FuelController extends Controller
         ]);
     }
 
-    // =============================================
-    // Member B — dagdag mo dito yung store() method
-    // at destroy() method pagkatapos ng index()
-    // =============================================
+            public function store(Request $request)
+        {
+            $validated = $request->validate([
+                'station_name'    => 'required|string|max:255',
+                'fuel_type'       => 'required|in:Diesel,Unleaded,Premium',
+                'price_per_liter' => 'required|numeric|gt:0',
+            ]);
+
+            auth()->user()->fuelEntries()->create($validated);
+
+            return redirect()->route('dashboard');
+        }
+
+        public function destroy(FuelEntry $fuelEntry)
+        {
+            abort_if($fuelEntry->user_id !== auth()->id(), 403);
+
+            $fuelEntry->delete();
+
+            return redirect()->route('dashboard');
+        }
 }
