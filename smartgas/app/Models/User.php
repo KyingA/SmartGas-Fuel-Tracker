@@ -29,4 +29,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the fuel entries for the user.
+     */
+    public function fuelEntries()
+    {
+        return $this->hasMany(FuelEntry::class);
+    }
 }
