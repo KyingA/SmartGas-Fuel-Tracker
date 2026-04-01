@@ -1,17 +1,18 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\FuelEntry;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class FuelController extends Controller
 {
     public function index()
     {
-        $entries = auth()->user()
-            ->fuelEntries()
-            ->latest()
+        $entries = FuelEntry::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return Inertia::render('Dashboard', [
@@ -19,25 +20,34 @@ class FuelController extends Controller
         ]);
     }
 
-            public function store(Request $request)
-        {
-            $validated = $request->validate([
-                'station_name'    => 'required|string|max:255',
-                'fuel_type'       => 'required|in:Diesel,Unleaded,Premium',
-                'price_per_liter' => 'required|numeric|gt:0',
-            ]);
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'station_name'    => 'required|string|max:255',
+            'fuel_type'       => 'required|in:Diesel,Unleaded,Premium',
+            'price_per_liter' => 'required|numeric|min:0.01',
+        ]);
 
-            auth()->user()->fuelEntries()->create($validated);
+        FuelEntry::create([
+            'user_id'         => Auth::id(),
+            'station_name'    => $validated['station_name'],
+            'fuel_type'       => $validated['fuel_type'],
+            'price_per_liter' => $validated['price_per_liter'],
+        ]);
 
-            return redirect()->route('dashboard');
+        return redirect()->route('dashboard')
+            ->with('success', 'Fuel price logged!');
+    }
+
+    public function destroy(FuelEntry $fuelEntry)
+    {
+        if ($fuelEntry->user_id !== Auth::id()) {
+            abort(403);
         }
 
-        public function destroy(FuelEntry $fuelEntry)
-        {
-            abort_if($fuelEntry->user_id !== auth()->id(), 403);
+        $fuelEntry->delete();
 
-            $fuelEntry->delete();
-
-            return redirect()->route('dashboard');
-        }
+        return redirect()->route('dashboard')
+            ->with('success', 'Entry deleted.');
+    }
 }
